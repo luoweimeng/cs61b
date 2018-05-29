@@ -10,7 +10,7 @@ public class ArrayDeque<Item> {
     private double USAGE_FACTOR = 0.25;
 
     public ArrayDeque() {
-        items = (Item[]) new Object();
+        items = (Item[]) new Object[8];
         size = 0;
         reservedSize = 8;
         frontPointer = 0;
@@ -36,9 +36,30 @@ public class ArrayDeque<Item> {
         return this.reservedSize == this.size;
     }
 
-    /* Resize the arrah list. */
-    public void resize(int newSize, String flag) {
 
+    /* Resize the array list.
+    * 0 1 2 3 4 5 6 7
+    *   e     s      */
+
+    private void resize(int newSize, String flag) {
+        Item[] newItems = (Item[]) new Object[newSize];
+        if (flag.equals("increase")) {
+            int startIndex = nextIndex(frontPointer);
+            //copy array from startPointer to the end
+            int firstLen = this.size - 1 - startIndex + 1;
+            System.arraycopy(this.items, startIndex, newItems, 1, firstLen);
+            //copy array from 0 to endPointer
+            int secondLen = this.endPointer;
+            System.arraycopy(this.items, 0, newItems, firstLen + 1, secondLen);
+        }
+        else if (flag.equals("decrease")) {
+            System.arraycopy(this.items, 1, newItems, 1, this.size);
+        }
+
+        this.items = newItems;
+        this.reservedSize = newSize;
+        this.frontPointer = 0;
+        this.endPointer = this.size + 1;
     }
 
     public void addFirst(Item item) {
@@ -72,16 +93,18 @@ public class ArrayDeque<Item> {
     }
 
     public void printDeque() {
-        int ptr = nextIndex(frontPointer);
-        while (size-- > 0) {
+        int ptr = nextIndex(this.frontPointer);
+        int i = 0;
+        while (i < this.size) {
             System.out.print(items[ptr] + " ");
             ptr = nextIndex(ptr);
+            i++;
         }
     }
 
     public Item removeFirst() {
         Item first = get(0);
-        
+
         this.set(0, null);
         this.frontPointer = nextIndex(frontPointer);
         this.size--;
@@ -101,9 +124,9 @@ public class ArrayDeque<Item> {
         return last;
     }
 
-    public void maintainUsagefactor() {
+    private void maintainUsagefactor() {
         if (this.reservedSize >= 16) {
-            if (double(this.size) / this.reservedSize < this.USAGE_FACTOR) {
+            if ((double)this.size / this.reservedSize < this.USAGE_FACTOR) {
                 int newSize = this.reservedSize / this.RESIZE_FACTOR;
                 this.resize(newSize, "decrease");
             }
@@ -121,5 +144,4 @@ public class ArrayDeque<Item> {
     private void set(int index, Item item) {
         this.items[this.getTrueIndex(index)] = item;
     }
-
 }
